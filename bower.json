@@ -1,7 +1,7 @@
 {
-  "name": "forparents",
+  "name": "gate-webview",
   "description": "",
-  "main": "forparents.lua",
+  "main": "gate-webview.lua",
   "version": "0.0.1",
   "ignore": [
     "config.lua",
@@ -9,7 +9,6 @@
     "build.settings"
   ],
   "dependencies": {
-    "log": "~0.3.0",
-    "httptools": "~0.1.2"
+    "log": "~0.3.0"
   }
 }

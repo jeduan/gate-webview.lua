@@ -3,8 +3,6 @@ local storyboard = require 'storyboard'
 local widget = require 'widget'
 local cacharro = require 'vendor.cacharro.cacharro'
 local dbconfig = require 'vendor.dbconfig.dbconfig'
-local dbconfig = require 'vendor.dbconfig.dbconfig'
-local httptools = require 'vendor.httptools.httptools'
 local log = require 'vendor.log.log'
 
 local scene = storyboard.newScene()
@@ -52,40 +50,11 @@ local function bye()
 end
 
 local function showWebview()
-	webview = native.newWebView(centerX - halfViewX, centerY - halfViewY + 80, display.actualContentWidth, display.actualContentHeight - 80)
-
-	-- local prospectId = dbconfig("prospectId")
-	-- 
-	-- if prospectId then
-	-- 	local url = string.format('%sforparents/thank-you?prospectId=%s', settings:get('parse.host'), prospectId or '')
-	-- 	-- print('Opening',url)
-	-- 
-	-- 	native.setActivityIndicator()
-	-- 	webview:request(url)
-	-- 	webview:addEventListener('urlRequest', webListener)
-	-- else
-	-- 	local query = "SELECT remoteplayerid FROM players;"
-	-- 	local playersRemoteIds = dbconfig.queryTable(query)
-	-- 
-	-- 	local remoteids = {}
-	-- 	for _, value in pairs(playersRemoteIds) do
-	-- 		remoteids[#remoteids + 1] = value["remoteplayerid"]
-	-- 	end
-	-- 
-	-- 	local url = string.format('%sforparents/%s?wordId=%s&playersIds=%s&store=%s', settings:get('parse.host'), settings.gamename, dbconfig("wordId") or '', table.concat(remoteids, ","), tostring(cacharro.store))
-	-- 	-- print('Showing: ', url)
-	-- 
-	-- 	local function listener( event )
-	-- 		local match = string.match(event.url, 'prospectId=([%w-]+)')
-	-- 		if match and event.type == 'loaded' then
-	-- 			dbconfig("prospectId", match)
-	-- 		end 
-	-- 	end
+	webview = native.newWebView(centerX - halfViewX, centerY - halfViewY, display.actualContentWidth, display.actualContentHeight)
 
 		native.setActivityIndicator()
 		webview:request(url)
 		webview:addEventListener('urlRequest', webListener)
-		webview:addEventListener('urlRequest', listener)
 	-- end
 end
 
@@ -110,14 +79,14 @@ function scene:exitScene()
 	questionGrp = nil
 end
 
-function scene:createScene()
-	local lang = dbconfig("language") or 'en'
+function scene:createScene(event)
+	params = event.params
+	assert(params and params.url, 'Called webview without params.url')
+
 	local white = display.newRect( self.view, 0, 0, display.actualContentWidth, display.actualContentHeight )
 	white:setReferencePoint(display.CenterReferencePoint)
 	white.x = centerX
 	white.y = centerY
-
-	self.view:insert(nav)
 
 	local questions = {
 		{32, 15, {47, 45, 37}},
