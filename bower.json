@@ -9,6 +9,8 @@
     "build.settings"
   ],
   "dependencies": {
-    "log": "~0.3.0"
+    "log": "*",
+    "vent": "*",
+    "tableutils": "~0.0.2"
   }
 }

@@ -3,21 +3,10 @@ local storyboard = require 'storyboard'
 local widget = require 'widget'
 local log = require 'vendor.log.log'
 local vent = require 'vendor.vent.vent'
+local t = require 'vendor.tableutils.tableutils'
 
 local scene = storyboard.newScene()
 local webview, questionGrp, params, nav
-
-function table.shuffle(t)
-	math.randomseed(os.time())
-	assert(t, "table.shuffle() expected a table, got nil")
-	local iterations = #t
-	local j
-	for i = iterations, 2, -1 do
-		j = math.random(i)
-		t[i], t[j] = t[j], t[i]
-	end
-	return t
-end
 
 ---- Constants
 local centerX = display.contentCenterX
@@ -130,7 +119,7 @@ function scene:createScene(event)
 	local question = questions[questionNum]
 
 	local answers = {1, 2, 3}
-	answers = table.shuffle(answers)
+	answers = t.shuffle(answers)
 
 	questionGrp = display.newGroup()
 	local titleLbl = display.newImage(questionGrp, "vendor/gate-webview/images/parentgateText_"..lang..".png")
