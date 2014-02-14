@@ -1,12 +1,11 @@
 local settings = require 'settings'
 local storyboard = require 'storyboard'
 local widget = require 'widget'
-local cacharro = require 'vendor.cacharro.cacharro'
-local dbconfig = require 'vendor.dbconfig.dbconfig'
 local log = require 'vendor.log.log'
+local vent = require 'vendor.vent.vent'
 
 local scene = storyboard.newScene()
-local webview, questionGrp, params
+local webview, questionGrp, params, nav
 
 function table.shuffle(t)
 	math.randomseed(os.time())
@@ -45,26 +44,26 @@ local function webListener( event )
 end
 
 local function bye()
-	sounds.pop()
 	storyboard.hideOverlay('slideDown', 200)
 end
 
 local function showWebview()
-	webview = native.newWebView(centerX - halfViewX, centerY - halfViewY, display.actualContentWidth, display.actualContentHeight)
+	webview = native.newWebView(centerX - halfViewX, centerY - halfViewY + 70, display.actualContentWidth, display.actualContentHeight - 70)
 
-		native.setActivityIndicator()
-		webview:request(url)
-		webview:addEventListener('urlRequest', webListener)
-	-- end
+	native.setActivityIndicator()
+	webview:request(params.url)
+	webview:addEventListener('urlRequest', webListener)
 end
 
 local function answerTap(e)
-	sounds.pop()
 	if not e.target.ok then
-		e.target:setFillColor(190, 70, 63)
+		local errorColor = params.errorBackground or {190, 70, 63}
+		e.target:setFillColor(unpack(errorBackground))
 		timer.performWithDelay(1000, bye)
 	else
 		display.remove(questionGrp)
+		questionGrp = nil
+		nav:toFront()
 		showWebview()
 	end
 
@@ -76,12 +75,46 @@ function scene:exitScene()
 		webview:removeSelf()
 		webview = nil
 	end
+	vent:off('showurl', self.showUrl)
 	questionGrp = nil
 end
 
+function scene.showUrl(event)
+	if webview then
+		local url = event.url or event.value
+		if url then
+			webview:request(url)
+		end
+	end
+	return true
+end
+
 function scene:createScene(event)
+	vent:on('showurl', self.showUrl)
 	params = event.params
+	local lang = params.lang or 'en'
 	assert(params and params.url, 'Called webview without params.url')
+	local navBgColor = params.navBackground or {0, 0, 0}
+
+	if params.nav then
+		nav = params.nav
+	else
+		nav = display.newGroup()
+		local navBg = display.newRect(nav, 0, 0, display.actualContentWidth, 70)
+		navBg:setReferencePoint(display.TopCenterReferencePoint)
+		navBg.x = centerX
+		navBg.y = centerY - halfViewY
+		navBg:setFillColor(unpack(navBgColor))
+
+		local navBack = display.newImage(nav, "vendor/gate-webview/images/back.png", true)
+		navBack:setReferencePoint(display.CenterLeftReferencePoint)
+		navBack.x = leftX + 0
+		navBack.y = topY + 30
+		navBack.xScale = 0.70
+		navBack.yScale = 0.70
+		navBack:addEventListener('tap', bye)
+	end
+	scene.view:insert(nav)
 
 	local white = display.newRect( self.view, 0, 0, display.actualContentWidth, display.actualContentHeight )
 	white:setReferencePoint(display.CenterReferencePoint)
@@ -99,20 +132,20 @@ function scene:createScene(event)
 	local answers = {1, 2, 3}
 	answers = table.shuffle(answers)
 
-	local titleLbl = display.newImage(self.view, "vendor/forparents/images/parentgateText_"..lang..".png")
+	questionGrp = display.newGroup()
+	local titleLbl = display.newImage(questionGrp, "vendor/gate-webview/images/parentgateText_"..lang..".png")
 	titleLbl.x = centerX
 	titleLbl.y = centerY - 200
 	titleLbl.xScale = 0.8
 	titleLbl.yScale = 0.8
 
-
-	local pickLbl = display.newImage(self.view, "vendor/forparents/images/operation".. questionNum ..".png")
+	local pickLbl = display.newImage(questionGrp, "vendor/gate-webview/images/operation".. questionNum ..".png")
 	pickLbl.x = centerX
 	pickLbl.y = centerY - 100
 	pickLbl.xScale = 0.8
 	pickLbl.yScale = 0.8
 
-	local leftBtn = display.newImage(self.view, "vendor/forparents/images/"..question[3][answers[1]]..".png")
+	local leftBtn = display.newImage(questionGrp, "vendor/gate-webview/images/"..question[3][answers[1]]..".png")
 	leftBtn.x = centerX - 200
 	leftBtn.y = centerY + 80
 	leftBtn.ok = answers[1] == 1
@@ -121,7 +154,7 @@ function scene:createScene(event)
 	leftBtn:addEventListener("tap", answerTap)
 
 
-	local centerBtn = display.newImage(self.view, "vendor/forparents/images/"..question[3][answers[2]]..".png")
+	local centerBtn = display.newImage(questionGrp, "vendor/gate-webview/images/"..question[3][answers[2]]..".png")
 	centerBtn.x = centerX
 	centerBtn.y = centerY + 80
 	centerBtn.ok = answers[2] == 1
@@ -129,7 +162,7 @@ function scene:createScene(event)
 	centerBtn.yScale = 0.8
 	centerBtn:addEventListener("tap", answerTap)
 
-	local rightBtn = display.newImage(self.view, "vendor/forparents/images/"..question[3][answers[3]]..".png")
+	local rightBtn = display.newImage(questionGrp, "vendor/gate-webview/images/"..question[3][answers[3]]..".png")
 	rightBtn.x = centerX + 200
 	rightBtn.y = centerY + 80
 	rightBtn.ok = answers[3] == 1
@@ -137,13 +170,16 @@ function scene:createScene(event)
 	rightBtn.yScale = 0.8
 	rightBtn:addEventListener("tap", answerTap)
 
-	local backBtn = display.newImage(self.view, "vendor/forparents/images/back.png")
+	local backBtn = display.newImage(questionGrp, "vendor/gate-webview/images/back.png")
 	backBtn:setReferencePoint(display.TopLeftReferencePoint)
 	backBtn.x = leftX - 20
 	backBtn.y = topY - 20
 	backBtn.xScale = 0.9
 	backBtn.yScale = 0.9
 	backBtn:addEventListener("tap", bye)
+
+	self.view:insert(questionGrp)
+
 end
 
 function scene:enterScene()
