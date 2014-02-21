@@ -90,13 +90,13 @@ function scene:createScene(event)
 	else
 		nav = display.newGroup()
 		local navBg = display.newRect(nav, 0, 0, display.actualContentWidth, 70)
-		navBg:setReferencePoint(display.TopCenterReferencePoint)
+		navBg.anchorY = 0
 		navBg.x = centerX
 		navBg.y = centerY - halfViewY
 		navBg:setFillColor(unpack(navBgColor))
 
 		local navBack = display.newImage(nav, "vendor/gate-webview/images/back.png", true)
-		navBack:setReferencePoint(display.CenterLeftReferencePoint)
+		navBack.anchorX = 0
 		navBack.x = leftX + 0
 		navBack.y = topY + 30
 		navBack.xScale = 0.70
@@ -106,7 +106,6 @@ function scene:createScene(event)
 	scene.view:insert(nav)
 
 	local white = display.newRect( self.view, 0, 0, display.actualContentWidth, display.actualContentHeight )
-	white:setReferencePoint(display.CenterReferencePoint)
 	white.x = centerX
 	white.y = centerY
 
@@ -160,7 +159,8 @@ function scene:createScene(event)
 	rightBtn:addEventListener("tap", answerTap)
 
 	local backBtn = display.newImage(questionGrp, "vendor/gate-webview/images/back.png")
-	backBtn:setReferencePoint(display.TopLeftReferencePoint)
+	backBtn.anchorX = 0
+	backBtn.anchorY = 0
 	backBtn.x = leftX - 20
 	backBtn.y = topY - 20
 	backBtn.xScale = 0.9
