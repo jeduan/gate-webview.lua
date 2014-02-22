@@ -6,7 +6,7 @@ local vent = require 'vendor.vent.vent'
 local t = require 'vendor.tableutils.tableutils'
 
 local scene = storyboard.newScene()
-local webview, questionGrp, params, nav
+local webview, questionGrp, params, nav, navHeight
 
 ---- Constants
 local centerX = display.contentCenterX
@@ -37,7 +37,8 @@ local function bye()
 end
 
 local function showWebview()
-	webview = native.newWebView(centerX - halfViewX, centerY - halfViewY + 70, display.actualContentWidth, display.actualContentHeight - 70)
+	webview = native.newWebView(centerX, centerY + (navHeight / 2),
+	display.actualContentWidth, display.actualContentHeight - navHeight)
 
 	native.setActivityIndicator()
 	webview:request(params.url)
@@ -47,7 +48,7 @@ end
 local function answerTap(e)
 	if not e.target.ok then
 		local errorColor = params.errorBackground or {190, 70, 63}
-		e.target:setFillColor(unpack(errorBackground))
+		e.target:setFillColor(unpack(errorColor))
 		timer.performWithDelay(1000, bye)
 	else
 		display.remove(questionGrp)
@@ -83,13 +84,19 @@ function scene:createScene(event)
 	params = event.params
 	local lang = params.lang or 'en'
 	assert(params and params.url, 'Called webview without params.url')
-	local navBgColor = params.navBackground or {0, 0, 0}
+	local navBgColor = params.navBackground or {0.4, 0.4, 0.4}
+	navHeight = params.navHeight or 80
 
 	if params.nav then
 		nav = params.nav
 	else
-		nav = display.newGroup()
-		local navBg = display.newRect(nav, 0, 0, display.actualContentWidth, 70)
+		nav = display.newContainer(display.viewableContentWidth, navHeight)
+		nav.anchorX = 0.5
+		nav.anchorY = 0
+		nav.x = centerX
+		nav.y = topY
+
+		local navBg = display.newRect(nav, centerX, topY, display.viewableContentWidth, navHeight)
 		navBg.anchorY = 0
 		navBg.x = centerX
 		navBg.y = centerY - halfViewY
@@ -105,9 +112,8 @@ function scene:createScene(event)
 	end
 	scene.view:insert(nav)
 
-	local white = display.newRect( self.view, 0, 0, display.actualContentWidth, display.actualContentHeight )
-	white.x = centerX
-	white.y = centerY
+	local white = display.newRect( self.view, centerX, centerY,
+	display.actualContentWidth, display.actualContentHeight )
 
 	local questions = {
 		{32, 15, {47, 45, 37}},
