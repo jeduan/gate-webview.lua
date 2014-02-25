@@ -46,6 +46,10 @@ local function showWebview()
 end
 
 local function answerTap(e)
+	if type(params.onRelease) == 'function' then
+		params.onRelease(e)
+		print 'pop!'
+	end
 	if not e.target.ok then
 		local errorColor = params.errorBackground or {190, 70, 63}
 		e.target:setFillColor(unpack(errorColor))
