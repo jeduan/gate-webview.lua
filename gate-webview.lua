@@ -47,7 +47,7 @@ end
 local function answerTap(e)
 	if not e.target.ok then
 		local errorColor = params.errorBackground or {190, 70, 63}
-		e.target:setFillColor(unpack(errorBackground))
+		e.target:setFillColor(unpack(errorColor))
 		timer.performWithDelay(1000, bye)
 	else
 		display.remove(questionGrp)
